@@ -27,7 +27,7 @@ void bubbleSort(int* arr, int s){
 
             //printing passes
             cout << "J-Pass " << j+1 << ": ";
-            print(arr, s);
+            print(arr, s+1);
         }
         //printing passes
         cout << endl;
@@ -70,7 +70,7 @@ void selectionSort(int* arr, int s){
     cout << "Pass 0: ";
     print(arr, s);
 
-    for(int i = 0; i<s; i++){
+    for(int i = 0; i<s-1; i++){
         int indexOfSmallest = i;
         for(int j = i+1; j<s; j++){
             if(arr[j] < arr[indexOfSmallest]){
@@ -102,6 +102,7 @@ int main(){
     }
 
     int* arrToPass = new int[s];
+
     for(int i = 0; i<s; i++){
         arrToPass[i] = arr[i];
     }
@@ -125,4 +126,7 @@ int main(){
     selectionSort(arrToPass, s);
     cout << "Result: " <<  endl;
     print(arrToPass, s);
+
+    delete[] arr;
+    delete[] arrToPass;
 }
