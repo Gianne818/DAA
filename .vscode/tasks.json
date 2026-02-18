@@ -1,0 +1,26 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "C/C++: clang++ build active file",
+            "command": "/usr/bin/clang++",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${file}",
+                "-o",
+                "${workspaceFolder}/bin/${fileBasenameNoExtension}"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "Task for building with clang++ into bin folder."
+        }
+    ]
+}
