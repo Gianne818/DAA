@@ -59,7 +59,7 @@ int main(){
     list->print();
 }
 
-void bubbleSort(List* list){
+void bubbleSort(List* list){ //Best case if naay swapped flag, n, worst case n^2, n^2 swaps
     int s = list->size();
     for(int i = 0; i<s-1; i++){
         for(int j = 0; j<s-i-1; j++){
@@ -71,7 +71,7 @@ void bubbleSort(List* list){
     }
 }
 
-void selectionSort(List* list){
+void selectionSort(List* list){ //redeeming feature is that it has the least amount of swaps, n swaps
     int s = list->size();
     for(int i = 0; i<s-1; i++){
         int smallest = i;
@@ -87,7 +87,7 @@ void selectionSort(List* list){
     }
 }
 
-void insertionSort(List* list){
+void insertionSort(List* list){ //Best case is n, worst case is n^2, n^2 swaps
     int s = list->size();
     for(int i = 1; i<s; i++){
         int j = i;
