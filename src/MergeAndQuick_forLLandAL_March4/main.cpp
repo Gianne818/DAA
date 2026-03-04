@@ -7,7 +7,7 @@ void bubbleSort(List* list);
 void selectionSort(List* list);
 void insertionSort(List* list);
 void quickSort(List* list, int left, int right);
-void mergeSort(List* list, int left, int right) 
+void mergeSort(List* list, int left, int right);
 
 
 int main(){
