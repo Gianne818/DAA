@@ -111,8 +111,22 @@ void insertionSort(List* list){ //Best case is n, worst case is n^2, n^2 swaps
 //==================== MERGE SORT ====================
 /*
 * VERY Inefficient for LinkedList, up to O(n^3logn) since we dont have a set(ind, val) function
-* for ArrayList, up tp O(n^2logn). 
-* swap() for ll is O(n), and get for ll is O(n)
+ * for ArrayList, up tp O(n^2logn). 
+ * swap() for ll is O(n), and get for ll is O(n)
+ * 
+ * * RUNTIME ANALYSIS (ArrayList):
+ * - Overall: O(n^2 log n)
+ * - Detail: The recursion depth is O(log n). However, because we lack a set() 
+ * method, mergeArrays must "search and swap" to place values, making the 
+ * merge step O(n^2) instead of O(n).
+ *
+ * RUNTIME ANALYSIS (LinkedList):
+ * - Overall: O(n^3 log n)
+ * - Detail: This is the "Worst Case" for this interface.
+ * 1. get() takes O(n) to find values for temp arrays.
+ * 2. The workaround search loop takes O(n).
+ * 3. swap() takes O(n) to move nodes.
+ * Since these are nested inside the merge loop, the merge step becomes O(n^3).
 */
 
 void mergeArrays(List* list, int left, int mid, int right) {
@@ -196,6 +210,15 @@ void mergeSort(List* list, int left, int right) {
 //==================== QUICK SORT ====================
 /*
 * get() and swap() is still O(n) for linked list
+* RUNTIME ANALYSIS (ArrayList):
+* - Average/Best: O(n log n)
+* - Worst: O(n^2) [Occurs with sorted/reverse-sorted data]
+* - Efficiency: High, as get() and swap() are O(1).
+* RUNTIME ANALYSIS (LinkedList):
+* - Average/Best: O(n^2 log n) 
+* - Worst: O(n^3)
+* - Note: The O(n^2 log n) is because the partition loop runs 'n' times, 
+* and inside it, get(i) and swap(i, low) each take O(n) to walk the nodes.
 */
 
 
