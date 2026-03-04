@@ -62,12 +62,15 @@ int main(){
 void bubbleSort(List* list){ //Best case if naay swapped flag, n, worst case n^2, n^2 swaps
     int s = list->size();
     for(int i = 0; i<s-1; i++){
+        bool swapped = false;
         for(int j = 0; j<s-i-1; j++){
             if(list->get(j) > list->get(j+1)){
                 list->swap(j, j+1);
                 list->print();
+                swapped = true;
             }
         }
+        if(!swapped) break;
     }
 }
 
@@ -91,7 +94,7 @@ void insertionSort(List* list){ //Best case is n, worst case is n^2, n^2 swaps
     int s = list->size();
     for(int i = 1; i<s; i++){
         int j = i;
-        while(j>=0 && list->get(j-1) > list->get(j)){
+        while(j>0 && list->get(j-1) > list->get(j)){
             list->swap(j, j-1);
             list->print();
             j--;
