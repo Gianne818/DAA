@@ -1,0 +1,45 @@
+//================= HASH CODES =================
+
+// POLYNOMIAL, where a = 5;
+int hash_code(string key){
+    int h = 0, a = 5;
+    for(int i = 0; i<key.length(); i++){
+        h = h * a + (int)key[i];
+    }
+    return h;
+}
+
+// CYCLIC SHIFT
+int hash_code(string key){
+    unsigned int h = 0;
+    for(int i = 0; i<key.length(); i++){
+        h = (h << 5) | (h >> 27)
+        h+= (unsigned int)key[i];
+    }
+    return (int)h;
+}
+
+// ASCII of the char, also works for int
+int hash_code(char key) {
+    return (int) key;
+}
+
+// HIGH ORDER bits for double, for float, we can directly type cast it to int
+int hash_code(double key){
+    unsigned long long* bitsPtr = (unsigned long long* ) &key;
+    unsigned long long bits = *bitsPtr;
+    return (int)(bits >> 32);
+}
+
+//================= COMPRESSION =================
+
+// DIVISION method, with negative safety
+int compress(int code){
+    return (code % N + N) % N;
+}
+
+// MAD method, where a = 59, b = 17, p = 509
+int compress(int code){
+    int a = 59, b = 17, p = 509;
+    return ((code*a + b) % p) % N
+}

@@ -10,14 +10,18 @@ class HashTable {
     // Sentinel character representing a "defunct" or deleted slot
     const char DEFUNCT = ' '; 
 
+    // Use the ASCII code of the character
     int hash_code(char key) {
         return (int) key;
     }
 
+    // This hash table uses a MAD compression function
+    // where a = 59, b = 17, p = 509
     int compress(int code) {
         return ((59 * code + 17) % 509) % N;
     }
 
+    // Using the knowledge that a hash function is composed of two portions
     int hashFunction(char key) {
         return compress(hash_code(key));
     }
