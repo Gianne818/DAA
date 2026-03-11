@@ -1,5 +1,8 @@
 #include <iostream>
-#include "hashtable.hpp"
+#include <string>
+// Assuming HTSepChain is in its own header or included here
+#include "htsepchain.hpp" 
+
 using namespace std;
 
 int main() {
@@ -7,10 +10,12 @@ int main() {
     int size;
     cin >> size;
 
-    HashTable *table = new HashTable(size);
+    // Use the specific implementation class
+    HTSepChain *table = new HTSepChain(size);
 
     char op;
-    int key; // Changed to int
+    string key; // Changed from int to string
+    
     do {
         cout << "Operation: ";
         cin >> op;
@@ -18,7 +23,11 @@ int main() {
         switch (op) {
             case 'i': // Insert
                 cin >> key;
-                cout << table->insert(key) << endl;
+                try {
+                    cout << table->insert(key) << endl;
+                } catch (const runtime_error& e) {
+                    cout << e.what() << endl;
+                }
                 break;
 
             case 's': // Search
@@ -26,20 +35,24 @@ int main() {
                 cout << table->search(key) << endl;
                 break;
 
-            case 'd': // Delete
+            case 'd': // Delete (Remove)
                 cin >> key;
                 cout << table->remove(key) << endl;
                 break;
 
-            case 'p':
+            case 'p': // Print
                 table->print();
                 break;
 
             case 'x':
                 cout << "Exiting" << endl;
                 break;
+            
+            default:
+                cout << "Invalid operation." << endl;
         }
     } while (op != 'x');
 
+    delete table; // Clean up memory
     return 0;
 }
