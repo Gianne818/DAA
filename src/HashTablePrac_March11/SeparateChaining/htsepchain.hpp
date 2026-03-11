@@ -8,16 +8,12 @@ class HTSepChain : public HashTable {
     int count;
 
     public:
-    HTSepChain(int n) {
-        this->N = n;
+    HTSepChain(int N){
+        this->N = N;
         this->count = 0;
-
         this->table = new LinkedList*[N];
-
-        for (int i = 0; i < N; i++) {
-
+        for(int i = 0; i<N; i++){
             table[i] = new LinkedList();
-
         }
     }
 
@@ -25,60 +21,68 @@ class HTSepChain : public HashTable {
         For the string's hash code, use the Polynomial Hash Code using a=5. 
         For the compression function, you will implement the Division Method.
     */
-    
-    int hash_code(string key) {
+
+    int hash_code(string key){
         int h = 0, a = 5;
-
-        for (char c : key) {
-
-            h = h * a + (int)c; //horner's method in evalutaing polynomials
+        for(int i = 0; i<key.length(); i++){
+            h = h * a + (int)key[i];
         }
-
-        return (int)h;
+        return h;
     }
 
-    int compress(int code) { 
+    int compress(int code){
         return (code % N + N) % N;
-     }
+    }
 
-     int hashfn(string key){
+    int hashfn(string key){
         return compress(hash_code(key));
-     }
+    }
 
-    int insert(string key) {
+
+    
+    // int hash_code(string key) {
+    //     int h = 0, a = 5;
+    //     for (char c : key) {
+    //         h = h * a + (int)c; //horner's method in evalutaing polynomials
+    //     }
+    //     return h;
+    // }
+
+    // int compress(int code) { 
+    //     return (code % N + N) % N;
+    //  }
+
+    //  int hashfn(string key){
+    //     return compress(hash_code(key));
+    //  }
+
+    //return size of current linkedlist
+    int insert(string key){
         int index = hashfn(key);
 
-        if (table[index]->find_node(key)) {
-            throw runtime_error("already added key" + key); 
+        if(table[index]->find_node(key)){
+            throw runtime_error("already added key " + key);
         }
 
         table[index]->add_last(key);
-        this->count++;
-
+        count++;
         return table[index]->size_();
     }
 
-    int remove(string key) {
-
+    int remove(string key){
         int index = hashfn(key);
-
-        if (table[index]->remove_node(key)) {
-
-            this->count--;
-
+        if(table[index]->remove_node(key)){
+            count--;
             return table[index]->size_();
-        } else {
-            return -1;
         }
+        return -1;
     }
 
-    int search(string key) {
+    int search(string key){
         int index = hashfn(key);
-
-        if (table[index]->find_node(key)) {
+        if(table[index]->find_node(key)){
             return table[index]->size_();
         }
-
         return -1;
     }
 
