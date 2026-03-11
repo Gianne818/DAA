@@ -15,6 +15,7 @@ int getCyclicShiftHashCode(string key) {
 }
 
 
+
 int main() {
     string words[2] = {"obedient", "joyous"}; // Example words [cite: 131, 132]
     

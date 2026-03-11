@@ -9,7 +9,7 @@ class HashTable {
 
     // Use the ASCII code of the character
     int hash_code(char key) {
-        return (int) key;
+        return (int) key;//independent of the size of the hash table
     }
 
     // This hash table uses a MAD compression function
@@ -19,9 +19,10 @@ class HashTable {
     }
 
     // Using the knowledge that a hash function is composed of two portions
-    int hashfn(char key) {
+    int hashFunction(char key) {
         return compress(hash_code(key));
     }
+
 public:
     explicit HashTable(int N) : N(N), count(0) {
         if(N < 0)
@@ -34,7 +35,10 @@ public:
     int insert(char key) {
         if(count == N || search(key) > 0)
             return -1;
-        int index = hashfn(key), i = 0, probe = (index + i++) % N;
+        int index = hashFunction(key),
+        i = 0,
+        probe = (index + i++) % N;
+        
         while(table[probe] != '\0')
             probe = (index + i++) % N;
         table[probe] = key;
@@ -43,11 +47,11 @@ public:
     }
 
     int search(char key) {
-        int index = hashfn(key),
+        int index = hashFunction(key),
         i = 0, 
         probe = (index + i++) % N,
         checkedNum = 0;
-        
+
         while(checkedNum < count){
             if(table[probe] == key)
                 return i;
@@ -62,7 +66,7 @@ public:
         int keyIndex = search(key) - 1;
         if(keyIndex < 0)
             return -1;
-        table[(hashfn(key) + keyIndex) % N] = '\0';
+        table[(hashFunction(key) + keyIndex) % N] = '\0';
         count--;
         return keyIndex;
     }
