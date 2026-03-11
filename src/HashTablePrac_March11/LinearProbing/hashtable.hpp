@@ -16,7 +16,7 @@ class HashTable {
     // This hash table uses a MAD compression function
     // where a = 59, b = 17, p = 509
     int compress(int code) {
-        return ((code*59+17)+509)%N;
+        return ((code*59+17)%509)%N;
     }
 
     // Using the knowledge that a hash function is composed of two portions
@@ -27,6 +27,7 @@ class HashTable {
 public:
     HashTable(int N){
         this->N = N;
+        this->count = 0;
         table = new char[N];
         for(int i = 0; i<N; i++){
             table[i] = '\0';
@@ -36,7 +37,7 @@ public:
     // returns number of probing done, aka number of steps done from original hash code
     // if unable to insert, return -1
     int insert(char key) {
-        if(count == N || search(key)>=0) return -1; //if xylphy version of search, search(key)>0
+        if(count == N || search(key)>0) return -1; //if xylphy version of search, search(key)>0
         int index = hashfn(key);
 
         int i = 0;
@@ -64,7 +65,7 @@ public:
 
         while(i<N && table[probe]!='\0'){
             if(table[probe]==key){
-                return i;
+                return i+1;
             }
             i++;
             probe = (index+i)%N;
@@ -75,8 +76,8 @@ public:
     // returns number of probing done, aka number of steps done from original hash code
     // if unable to insert, return -1
     int remove(char key) {
-        int i = search(key);  //i = search(key)-1 if we use the xylphy version of search
-        if(i<=0) return -1; // i<0 check if we use xylphy version
+        int i = search(key)-1;  //i = search(key)-1 if we use the xylphy version of search
+        if(i<0) return -1; // i<0 check if we use xylphy version
 
         int index = hashfn(key);
         int probe = (index+i)%N;
