@@ -2,6 +2,8 @@
 #include "linkedlist.hpp"
 using namespace std;
 
+//NOT FINISHED
+
 LinkedList* mergeSort(LinkedList* list);
 
 int main(){
