@@ -35,6 +35,19 @@ public:
         size++;
     }
 
+    // void add_last(string key){
+    //     node* n = new node();
+    //     n->elem = key;
+    //     if(!head){
+    //         head = tail = n;
+    //     } else {
+    //         tail->next = n;
+    //         tail = n;
+    //     }
+    //     n->next = nullptr;
+    //     size++;
+    // }
+
     bool find_node(string key){
         node* temp = head;
         while(temp){
@@ -45,6 +58,17 @@ public:
         }
         return false;
     }
+
+    // bool find_node(string key){
+    //     node* temp = head;
+    //     while(temp){
+    //         if(temp->elem == key){
+    //             return true;
+    //         }
+    //         temp = temp->next;
+    //     }
+    //     return false;
+    // }
 
     bool remove_node(string key){
         node* temp = head;
@@ -73,6 +97,36 @@ public:
         }
         return false;
     }
+
+    // bool remove_node(string key){
+    //     node* temp = head;
+    //     node* prev = nullptr;
+    //     while(temp){
+    //         if(temp->elem == key){
+    //             if(temp == head){
+    //                 if(head == tail){
+    //                     head = tail = nullptr;
+    //                 }
+    //                 else {
+    //                     head = head->next;
+    //                 }
+    //             }
+    //             else if (temp == tail){
+    //                 tail = prev;
+    //                 tail->next = nullptr;
+    //             }
+    //             else {
+    //                 prev->next = temp->next;
+    //             }
+    //             delete temp;
+    //             size--;
+    //             return true;
+    //         }
+    //         prev = temp;
+    //         temp = temp->next;
+    //     }
+    //     return false;
+    // }
 
     int size_() {
         return size;

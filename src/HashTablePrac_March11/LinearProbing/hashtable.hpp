@@ -53,6 +53,22 @@ public:
         return i;
     }
 
+    // int insert(char key){
+    //     if(count == N || search(key)>0) return -1;
+    //     int index = hashfn(key);
+
+    //     int i = 0;
+    //     int probe = (index + i) % N;
+
+    //     while(table[probe]!='\0' && table[probe]!=DEFUNCT){
+    //         i++;
+    //         probe = (index + i) % N;
+    //     }
+    //     count++;
+    //     table[probe] = key;
+    //     return i;
+    // }
+
     
     // returns number of probing done, aka number of steps done from original hash code
     // if not found, return the number of probing done until not found, but negative.
@@ -72,6 +88,22 @@ public:
         }
         return -i;
     }
+
+    // int search(char key){        
+    //     int index = hashfn(key);
+    //     int i = 0;
+    //     int probe = (index+i)%N;
+
+    //     while(table[probe]!='\0'){
+    //         if(table[probe]==key){
+    //             return i+1;
+    //         }
+    //         i++;
+    //         probe = (index+i)%N;
+    //     }
+    //     return -i;
+    // }
+
 
     // returns number of probing done, aka number of steps done from original hash code
     // if unable to insert, return -1
@@ -101,6 +133,20 @@ public:
         return i;
     }
 
+    int remove(char key){
+        int i = search(key)-1;
+        if(i<0) return -1;
+        int index = hashfn(key);
+        int probe = (index+1)%N;
+
+        int next = (probe+1)%N;
+
+        if(table[next] == '\0'){
+            
+            int temp = probe
+        }
+    }
+
     void print() {
         for (int i = 0; i < N; i++) {
             cout << i << "\t";
@@ -112,3 +158,69 @@ public:
         cout << "\n";
     }
 };
+
+// #include <iostream>
+// #include <cstdlib>
+// using namespace std;
+
+// class HashTable{
+//     int N;
+//     char* table;
+//     int count = 0;
+
+//     const char DEFUNCT = ' ';
+
+//     int hash_code(char key){
+//         return (int)key;
+//     }
+
+//     // This hash table uses a MAD compression function
+//     // where a = 59, b = 17, p = 509
+//     int compress(int code){
+//         return ((code*59+ 17)%509)%N;
+//     }
+
+//     int hashfn(char key){
+//         return compress(hash_code(key));
+//     }
+
+
+
+//     public:
+//     HashTable(int N){
+//         this->N = N;
+//         table = new char[N];
+//         count = 0;
+//         for(int i = 0; i<N; i++){
+//             table[i] = '\0';
+//         }
+//     }
+
+//     int insert(char key){
+//         int index = hashfn(key);
+        
+//     }
+
+//     int remove(char key){
+
+//     }
+
+//     int search(char key){
+//         int index = hashfn(key);
+//         int i = 0;
+//         int probe = (index + i)%N;
+
+//     }
+
+//     void print() {
+//         for (int i = 0; i < N; i++) {
+//             cout << i << "\t";
+//         }
+//         cout << "\n";
+//         for (int i = 0; i < N; i++) {
+//             cout << table[i] << "\t";
+//         }
+//         cout << "\n";
+//     }
+
+// };
