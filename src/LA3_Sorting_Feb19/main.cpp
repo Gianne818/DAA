@@ -70,7 +70,10 @@ void bubbleSort(List* list){ //Best case if naay swapped flag, n, worst case n^2
                 swapped = true;
             }
         }
-        if(!swapped) break;
+        if(!swapped){
+            cout << "Breaking...\n";
+            break;
+        }
     }
 }
 
