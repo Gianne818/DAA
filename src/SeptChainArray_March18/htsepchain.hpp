@@ -1,103 +1,169 @@
-#include <iostream>
-#include <stdexcept>
+// #include <iostream>
+// #include <stdexcept>
 
+// using namespace std;
+
+// template <typename T>
+// class HTSepChain {
+//     T** table;
+//     int* bucketSizes;
+//     int N;
+//     int cap;
+
+//     int hash_code(T elem) {
+//         return (int)elem;
+//     }
+
+//     int compress(int code) {
+//         return (code % N + N) % N;
+//     }
+
+//     int hashfn(T elem) {
+//         return compress(hash_code(elem));
+//     }
+
+// public:
+//     HTSepChain(int N) {
+//         this->N = N;
+//         this->cap = 10;
+//         table = new T*[N];
+//         bucketSizes = new int[N];
+//         for (int i = 0; i < N; i++) {
+//             table[i] = new T[cap];
+//             bucketSizes[i] = 0;
+//         }
+//     }
+
+//     int search(T elem) {
+//         int index = hashfn(elem);
+//         for (int i = 0; i < bucketSizes[index]; i++) {
+//             if (table[index][i] == elem) {
+//                 return i;
+//             }
+//         }
+//         return -1;
+//     }
+
+//     int insert(T elem) {
+//         if (search(elem) != -1) {
+//             throw logic_error("Already added key");
+//         }
+        
+//         int index = hashfn(elem);
+//         if (bucketSizes[index] >= cap) {
+//             throw logic_error("Bucket is full");
+//         }
+
+//         table[index][bucketSizes[index]] = elem;
+//         bucketSizes[index]++;
+        
+//         return bucketSizes[index];
+//     }
+
+//     int remove(T elem) {
+//         int index = hashfn(elem);
+//         int target = search(elem);
+
+//         if (target == -1) return -1;
+
+//         for (int i = target; i < bucketSizes[index] - 1; i++) {
+//             table[index][i] = table[index][i + 1];
+//         }
+
+//         bucketSizes[index]--;
+//         return bucketSizes[index];
+//     }
+
+//     void print() {
+//         for (int i = 0; i < N; i++) {
+//             cout << i << "\t";
+//             for (int j = 0; j < bucketSizes[i]; j++) {
+//                 cout << table[i][j] << " ";
+//             }
+//             cout << endl;
+//         }
+//     }
+// };
+
+#include <iostream>
 using namespace std;
 
-template <typename T>
-class HTSepChain {
+template<typename T>
+class HTSepChain{
     T** table;
-    int* bucketSizes;
     int N;
+    int* bucketSizes;
+    int cap;
 
-    int hash_code(T elem) {
-        return (int)elem;
+    int hash_code(T elem){
+        return (int) elem;
     }
 
-    int compress(int code) {
-        return (code % N + N) % N;
+    int compress(int code){
+        return (code%N + N)%N;
     }
 
-    int hashfn(T elem) {
+    int hashfn(T elem){
         return compress(hash_code(elem));
     }
 
 public:
-    HTSepChain(int N) {
+    HTSepChain(int N){
         this->N = N;
         table = new T*[N];
         bucketSizes = new int[N];
-        for (int i = 0; i < N; i++) {
-            table[i] = nullptr;
+        cap = 10;
+        for(int i = 0; i<N; i++){
+            table[i] = (T*) malloc(cap*sizeof(T));
             bucketSizes[i] = 0;
         }
     }
 
-    bool search(T elem) {
+
+    int search(T elem){
         int index = hashfn(elem);
-        for (int i = 0; i < bucketSizes[index]; i++) {
-            if (table[index][i] == elem) {
-                return true;
+
+        for(int i = 0; i<bucketSizes[index]; i++){
+            if(table[index][i] == elem){
+                return i;
             }
         }
-        return false;
+        return -1;
     }
 
-    int insert(T elem) {
-        if (search(elem)) {
-            throw logic_error("Already added key");
-        }
+    int insert(T elem){
         int index = hashfn(elem);
-        int currSize = bucketSizes[index];
-        
-        T* temp = new T[currSize + 1];
-        for (int i = 0; i < currSize; i++) {
-            temp[i] = table[index][i];
+
+        if(search(elem)!=-1){
+            throw logic_error("Already has key.");
         }
-        temp[currSize] = elem;
-        
-        delete[] table[index];
-        table[index] = temp;
+        if(bucketSizes[index] == cap){
+            throw logic_error("Maximum bucket size reached.");
+        }
+
+        table[index][bucketSizes[index]] = elem;
         bucketSizes[index]++;
-        
         return bucketSizes[index];
     }
 
-    int remove(T elem) {
+    int remove(T elem){
         int index = hashfn(elem);
-        int currSize = bucketSizes[index];
-        int target = -1;
-
-        for (int i = 0; i < currSize; i++) {
-            if (table[index][i] == elem) {
-                target = i;
-                break;
-            }
+        int target = search(elem);
+        if(target==-1){
+            return -1;
         }
 
-        if (target == -1) return -1;
-
-        if (currSize == 1) {
-            delete[] table[index];
-            table[index] = nullptr;
-        } else {
-            T* temp = new T[currSize - 1];
-            for (int i = 0, j = 0; i < currSize; i++) {
-                if (i != target) {
-                    temp[j++] = table[index][i];
-                }
-            }
-            delete[] table[index];
-            table[index] = temp;
+        for(int i = target; i<bucketSizes[index]-1; i++){
+            table[index][i] = table[index][i+1];
         }
-
         bucketSizes[index]--;
         return bucketSizes[index];
     }
 
-    void print() {
-        for (int i = 0; i < N; i++) {
+    void print(){
+        for(int i = 0; i<N; i++){
             cout << i << "\t";
-            for (int j = 0; j < bucketSizes[i]; j++) {
+            for(int j = 0; j<bucketSizes[i]; j++){
                 cout << table[i][j] << " ";
             }
             cout << endl;
