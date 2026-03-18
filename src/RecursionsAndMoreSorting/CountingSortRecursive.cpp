@@ -22,7 +22,6 @@ void helper(int* arr, int s, int max, int* countArr, int curIndArr, int curIndCo
     helper(arr, s, max, countArr, curIndArr, curIndCountArr);
 }
 
-
 void countingSortRecur(int* arr, int s){
     int max = findMaxRecur(arr, s, arr[0], 0);
 
