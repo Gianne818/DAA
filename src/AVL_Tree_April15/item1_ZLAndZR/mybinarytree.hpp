@@ -136,6 +136,38 @@ public:
 
     }
 
+    // void zigleft(node* curr) {
+    //     node* y = curr->parent;
+    //     node* T2 = curr->left;
+
+    //     if(T2) T2->parent = y;
+    //     y->right = T2;
+
+    //     curr->parent = y->parent;
+    //     if(!y->parent) root = curr;
+    //     else if (y == y->parent->left) y->parent->left = curr;
+    //     else y->parent->right = curr;
+        
+    //     curr->left = y;
+    //     y->parent = curr;
+    // }
+
+    // void zigright(node* curr){
+    //     node* y = curr->parent;
+    //     node* T2 = curr->right;
+
+    //     if(T2) T2->parent = y;
+    //     y->left = T2;
+
+    //     curr->parent = y->parent;
+    //     if(!y->parent) root = curr;
+    //     else if (y == y->parent->left) y->parent->left = curr;
+    //     else y->parent->right = curr;
+
+    //     curr->right = y;
+    //     y->parent = curr;
+    // }
+
 
     // TODO implement zigright
     // params: curr - the left child that will be rotated with its parent

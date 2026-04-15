@@ -152,6 +152,50 @@ public:
         return true;
     }
 
+    bool restructure(node* gp){
+        if(!gp) return false;
+        node* par;
+        //find parent
+        int gpLH = gp->left ? gp->left->height() : -1;
+        int gpRH = gp->right ? gp->right->height() : -1;
+        par = (gpLH > gpRH) ? gp->left : gp->right;
+
+        bool gtop_right = false;
+        if(gp->right == par) gtop_right = true;
+
+        node* child;
+        //find child
+        int pLH = par->left ? par->left->height() : -1;
+        int pRH = par->right ? par->right->height() : -1;
+        if(pLH > pRH) child = par->left;
+        else if (pLH < pRH) child = par->right;
+        else child = (par == gp->left) ? par->left : par->right;
+
+        bool ptoc_right = false;
+        if(child == par->right) ptoc_right = true;
+
+        if(gtop_right && ptoc_right){
+            cout << "ZIGLEFT\n";
+            zigleft(par);
+        }
+
+        else if (gtop_right){
+            cout << "ZIGZAGLEFT\n";
+            zigright(child);
+            zigleft(child);
+        }
+        else if (!ptoc_right){
+            cout << "ZIGRIGHT\n";
+            zigright(par);
+        }
+        else{
+            cout << "ZIGZAGRIGHT\n";
+            zigleft(child);
+            zigright(child);
+        }
+        return true;
+    }
+
     void zigleft(node* curr) {
         tree->zigleft(curr);
     }

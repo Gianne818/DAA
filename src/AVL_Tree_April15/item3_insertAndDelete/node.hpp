@@ -20,5 +20,4 @@ struct node {
         int rh = right ? right->height() : -1;
         return lh-rh;
     }
-
 };

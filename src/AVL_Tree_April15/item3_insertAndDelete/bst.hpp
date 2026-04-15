@@ -45,6 +45,15 @@ class BST {
         return inserted;
     }
 
+    // node* insert(int num){
+    //     node* n = tree->getRoot();
+    //     if(!n) return tree->addRoot(num);
+    //     node* newNode = insert_node(n, num);
+
+    //     rebalance(newNode);
+    //     return newNode;
+    // }
+
     node* insert_node(node* n, int num) {
         if (n == NULL) {
             return NULL;
@@ -66,6 +75,24 @@ class BST {
             }
         }
     }
+
+    // node* insert_node(node* n, int num) {
+    //    if(!n) return nullptr;
+
+    //    if(n->elem == num){
+    //         return nullptr;
+    //    }
+
+
+    //    if(num < n->elem){
+    //         if(!n->left) return tree->addLeft(n, num);
+    //         else return insert_node(n->left, num);
+    //    }
+    //    else{
+    //         if(!n->right) return tree->addRight(n, num);
+    //         else return insert_node(n->right, num);
+    //    } 
+    // }
  
  
     // TODO perform post-processing by checking for violation after deletion
@@ -101,6 +128,36 @@ class BST {
             return remove_node(n->left, num);
         }
     }
+
+    // bool remove_node(node* n, int num){
+    //     if(!n) return false;
+
+    //     if(n->elem == num){
+    //         node* par = n->parent;
+    //         if(n->left && n->right){
+    //             node* r = n->right;
+    //             while(r->left){
+    //                 r = r->left;
+    //             }
+
+    //             node* rPar = r->parent;
+    //             int temp = tree->remove(r);
+    //             n->elem = temp;
+    //             rebalance(rPar);
+    //         } else {
+    //             tree->remove(n);
+    //             rebalance(par);
+
+    //         }
+    //         return true;
+    //     }
+
+    //     if(n->elem > num){
+    //         return remove_node(n->left, num);
+    //     } else {
+    //         return remove_node(n->right, num);
+    //     }
+    // }
  
     // TODO copy and paste your completed restructure method here
     // GIVEN the grandparent (or z), find the parent (or y), and the child (or x).

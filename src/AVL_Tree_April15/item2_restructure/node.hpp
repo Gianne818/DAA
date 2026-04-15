@@ -12,7 +12,7 @@ struct node {
     int height(){
         int lh = left ? left->height() : -1;
         int rh = right ? right->height() : -1;
-        return 1+max(lh, rh);
+        return 1 + max(lh, rh);
     }
     
 };
