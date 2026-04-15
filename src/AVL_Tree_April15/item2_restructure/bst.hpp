@@ -81,33 +81,29 @@ public:
     }
 
     // GIVEN the grandparent (or z), find the parent (or y), and the child (or x).
-    bool restructure(node* gp) {
-        int gpLeftHeight = (gp->left ? gp->left->height() : 0), gpRightHeight = (gp->right ? gp->right->height() : 0);
-        node* par = (gpLeftHeight - gpRightHeight > 0 ? gp->left : gp->right); // parent
+     bool restructure(node* gp) {
+        node* par;
         // TODO find parent
+        int gpLH = gp->left ? gp->left->height() : -1;
+        int gpRH = gp->right ? gp->right->height() : -1;
+        par = (gpLH > gpRH) ? gp->left : gp->right;
 
         // This is an indicator of the placement of grandparent to parent (gtop)
         bool gtop_right = false;
-        if (gp->right == par) {
-            gtop_right = true;
-        }
-
-        int parLeftHeight = (par->left ? par->left->height() : 0)
-                , parRightHeight = (par->right ? par->right->height() : 0);
-        int parBalanceFactor = parLeftHeight - parRightHeight;
+        if(gp->right == par) gtop_right = true;
+    
         node* child;
         // TODO find child
-
-        if(parBalanceFactor == 0){
-            child = (gtop_right ? par->right : par->left);
-        }else
-            child = (parBalanceFactor < 0 ? par->right : par->left);
+        int pLH = par->left ? par->left->height() : -1;
+        int pRH = par->right ? par->right->height() : -1;
+        if(pLH > pRH) child = par->left;
+        else if (pLH < pRH) child =  par->right;
+        else child = (par == gp->left) ? par->left : par->right; 
 
         // This is an indicator of the placement of parent to child (ptoc)
         bool ptoc_right = false;
-        if (par->right == child) {
-            ptoc_right = true;
-        }
+        if(child == par->right) ptoc_right = true;
+        
 
         // FOR THE FOLLOWING: Write in each of the if statements a console output
         // on its corresponding operation (ZIGLEFT, ZIGRIGHT, ZIGZAGLEFT, or ZIGZAGRIGHT)

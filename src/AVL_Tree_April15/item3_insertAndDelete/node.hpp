@@ -9,14 +9,16 @@ struct node {
     int elem;
  
     // TODO paste your height method here
-    int height() {
-        int lh = (left == NULL) ? -1 : left->height();
-        int rh = (right == NULL) ? -1 : right->height();
+    int height(){
+        int lh = left ? left->height() : -1;
+        int rh = right ? right->height() : -1;
         return 1 + max(lh, rh);
     }
+
     int getBalance(){
-        int lh = (left == NULL) ? -1 : left->height();
-        int rh = (right == NULL) ? -1 : right->height();
-        return lh - rh;
+        int lh = left ? left->height() : -1;
+        int rh = right ? right->height() : -1;
+        return lh-rh;
     }
+
 };

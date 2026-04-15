@@ -113,36 +113,37 @@ public:
 
     // TODO copy your completed zigleft here
     void zigleft(node* curr) {
-        node* parent = curr->parent, *gp = parent->parent;
-        if(parent == root)
-            root = curr;
-        else if(gp->left == parent)
-            gp->left = curr;
-        else
-            gp->right = curr;
-        curr->parent = parent->parent;
-        parent->right = curr->left;
-        if(curr->left)
-            curr->left->parent = parent;
-        curr->left = parent;
-        parent->parent = curr;
+       node* y = curr->parent;
+       node* T2 = curr->left;
+
+        if(T2) T2->parent = y;
+        y->right = T2;
+
+        curr->parent = y->parent;
+        curr->left = y;
+    
+        if(!y->parent) root = curr;
+        else if (y == y->parent->left) y->parent->left = curr;
+        else y->parent->right = curr;
+        y->parent = curr;
+
     }
 
     // TODO copy your completed zigright here
     void zigright(node* curr) {
-        node* parent = curr->parent, *gp = parent->parent;
-        if(parent == root)
-            root = curr;
-        else if(gp->right == parent)
-            gp->right = curr;
-        else
-            gp->left = curr;
-        curr->parent = parent->parent;
-        parent->left = curr->right;
-        if(curr->right)
-            curr->right->parent = parent;
-        curr->right = parent;
-        parent->parent = curr;
+        node* y = curr->parent;
+        node* T2 = curr->right;
+
+        if(T2) T2->parent = y;
+        y->left = T2;
+
+        curr->parent = y->parent;
+        curr->right = y;
+
+        if(!y->parent) root = curr;
+        else if (y == y->parent->left) y->parent->left = curr;
+        else y->parent->right = curr;
+        y->parent = curr;
     }
 
     void print() {
