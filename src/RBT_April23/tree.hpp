@@ -124,8 +124,8 @@ public:
                 }
 
                 if(
-                        (!sibling->right && !sibling->left) ||
-                        (sibling->right && sibling->left && !sibling->right->is_red && !sibling->left->is_red))
+                    (!sibling->right && !sibling->left) ||
+                    (sibling->right && sibling->left && !sibling->right->is_red && !sibling->left->is_red))
                 {
                     cout << "DELETION Violation: Case 2\n";
                     sibling->is_red = true;
