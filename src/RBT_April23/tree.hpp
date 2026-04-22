@@ -56,6 +56,7 @@ public:
     bool search(int num) {
         return search(root, num);
     }
+    
 
     bool insert(int num) {
         if (root == NULL) {
@@ -74,33 +75,34 @@ public:
                 }
                 size++;
                 node* par = newest->parent;
-                // CHECK for double red violation
-                while (newest->is_red && par->is_red) {
-                    node* sibling = NULL;
-                    if (par->parent->left == par) {
-                        sibling = par->parent->right;
-                    } else {
-                        sibling = par->parent->left;
-                    }
-                    // CASE 1: Sibling s of y is BLACK
-                    if (sibling == NULL || sibling->is_red == false) {
-                        cout << "INSERTION Violation: Case 1" << endl;
+                while(newest->is_red && par->is_red){
+                    node* uncle;
+                    node* gp = par->parent;
+                    if(gp->left == par) uncle = gp->right;
+                    else uncle = gp->left;
+
+                    //if uncle is black
+                    if(!uncle || !uncle->is_red){
+                        cout << "INSERTION Violation: Case 1\n";
                         node* b = restructure(newest, true);
                         b->is_red = false;
                         b->left->is_red = true;
                         b->right->is_red = true;
                         break;
-                    } else if (sibling->is_red == true) {
-                        cout << "INSERTION Violation: Case 2" << endl;
-                        sibling->is_red = false;
+                    } 
+                    //uncle is red
+                    else if(uncle->is_red){
+                        cout << "INSERTION Violatio: Case 1\n";
+                        uncle->is_red = false;
                         par->is_red = false;
-                        if (par->parent != root) {
-                            par->parent->is_red = true;
-                            newest = par->parent;
+                        if(gp != root){
+                            gp->is_red = true;
+                            newest = gp; //set newest to gp to not get stuck in loop
                             par = newest->parent;
                         }
                     }
                 }
+                root->is_red = false;
                 return true;
             }
         }
@@ -286,45 +288,25 @@ public:
         return true;
     }
 
-
-    void zigleft(node* curr) {
-        node* t2 = curr->left;
-        node* par = curr->parent;
-        if (!par) {
-            return;
-        }
-
-        node* gp = par->parent;
-        if (gp) {
-            if (gp->right == par) {
-                gp->right = curr;
-            } else {
-                gp->left = curr;
-            }
-            curr->parent = gp;
-        }
-        curr->left = par;
-        par->parent = curr;
-        par->right = t2;
-        if (t2) {
-            t2->parent = par;
-        }
-        if (!gp) {
-            root = curr;
-            curr->parent = NULL;
-        }
+    node* makeParentest(node* curr, node* y){
+        if(!y->parent) root = curr;
+        else if (y->parent->left == y) y->parent->left = curr;
+        else y->parent->right = curr;
+        return curr;
     }
 
-    void nodeTransplant(node* u, node* v){
-        if(u == root)
-            root = v;
-        else if(u->parent->left == u)
-            u->parent->left = v;
-        else
-            u->parent->right = v;
+    void zigleft(node* curr) {
+        node* y = curr->parent;
+        node* T2 = curr->left;
 
-        if(v)
-            v->parent = u->parent;
+        if(T2) T2->parent = y;
+        y->right = T2;
+
+        curr->parent = y->parent;
+        makeParentest(curr, y);
+
+        y->parent = curr;
+        curr->right = y;
     }
 
     // implementation of rotate operation of x where
@@ -333,13 +315,17 @@ public:
     //  /
     // x <- curr
     void zigright(node* curr) {
-        node *right = curr->right, *parent = curr->parent;
-        nodeTransplant(parent, curr);
-        curr->right = parent;
-        parent->parent = curr;
-        parent->left = right;
-        if(right)
-            right->parent = parent;
+        node* y = curr->parent;
+        node* T2 = curr->right;
+
+        if(T2) T2->parent = y;
+        y->left = T2;
+
+        curr->parent = y->parent;
+        makeParentest(curr, y);
+
+        y->parent = curr;
+        curr->left = y;
     }
 
     // Given the child, find its parent and grandparent. Assume that both are present.
@@ -412,12 +398,16 @@ public:
             zigleft(child);
             zigright(child);
             return child;
-        }else if(ptoc_right){
+        }
+
+        //no grandparent
+        else if(ptoc_right){
             if(print)
                 cout << "ZIGLEFT\n";
             zigleft(child);
             return child;
-        }else {
+        }
+        else {
             if(print)
                 cout << "ZIGRIGHT\n";
             zigright(child);
