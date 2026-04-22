@@ -136,6 +136,23 @@ public:
 
     }
 
+    void zigLeft(node* curr){
+        node* y = curr->parent;
+        node* T2 = curr->left;
+
+        if(T2) T2->parent = y;
+        y->right = T2;
+
+        curr->parent = y->parent;
+        if(!y->parent) root = curr;
+        else if (y == y->parent->left) y->parent->left = curr;
+        else y->parent->right = curr;
+
+
+        curr->left = y;
+        y->parent = curr;
+    }
+
     // void zigleft(node* curr) {
     //     node* y = curr->parent;
     //     node* T2 = curr->left;

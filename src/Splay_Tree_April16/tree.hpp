@@ -14,13 +14,23 @@ class BSTree {
         return n;
     }
 
-    bool searchHelper(int num) {
-        node* searchedNode = search_node(root, num);
+    bool search(node* curr, int num) {
+        if (curr == NULL) {
+            // restructure(curr);
+            return false;
+        }
+        if (num == curr->element) {
+            splay(curr);
+            // restructure(curr);
+            return true;
+        }
 
-        while(searchedNode->parent)
-            restructure(searchedNode);
-
-        return root->element == num;
+        if (num < curr->element) {
+            // restructure(curr);
+            return search(curr->left, num);
+        }
+        // restructure(curr);
+        return search(curr->right, num);
     }
 
     node* search_node(node* curr, int num) {
@@ -40,14 +50,14 @@ class BSTree {
         return curr;
     }
 
-public:
+    public:
     BSTree() {
         root = NULL;
         size = 0;
     }
 
     bool search(int num) {
-        return searchHelper(num);
+        return search(root, num);
     }
 
     bool insert(int num) {
@@ -64,9 +74,8 @@ public:
                 } else {
                     parent->left = newest;
                 }
-                while(newest->parent)
-                    restructure(newest);
                 size++;
+                splay(newest);
                 return true;
             }
         }
@@ -74,134 +83,152 @@ public:
     }
 
     bool remove(int num) {
-        if (isEmpty()) {
-            return false;
+      if (isEmpty()) {
+        return false;
+      }
+      node* rem_node = search_node(root, num);
+      if (rem_node->element != num) {
+        return false;
+      }
+
+      // FIND the number of children.
+      int children = 0;
+      // 0 - no children
+      // -1 - left child only
+      // 1 - right child only
+      // 2 - both children
+      if (rem_node->right) {
+        children = 1;
+      }
+      if (rem_node->left) {
+        if (children == 1) {
+          children = 2;
+        } else {
+          children = -1;
+        }
+      }
+
+      if (children == 0) { // NO CHILDREN
+        node* parent = rem_node->parent;
+        if (!parent) {
+          root = NULL;
+        } else {
+          if (rem_node == parent->left) {
+            parent->left = NULL;
+          } else {
+            parent->right = NULL;
+          }
         }
 
-        node* rem_node = search_node(root, num);
-        if (rem_node->element != num) {
-            return false;
+        free(rem_node);
+        size--;
+      } else if (children == -1 || children == 1) { // ONE CHILD
+        node* parent = rem_node->parent;
+        node* child;
+        if (children == -1) {
+          child = rem_node->left;
+        } else {
+          child = rem_node->right;
         }
 
-        // FIND the number of children.
-        int children = 0;
-        // 0 - no children
-        // -1 - left child only
-        // 1 - right child only
-        // 2 - both children
-        if (rem_node->right) {
-            children = 1;
-        }
-        if (rem_node->left) {
-            if (children == 1) {
-                children = 2;
-            } else {
-                children = -1;
-            }
+        child->parent = parent;
+        if (!parent) {
+          root = child;
+        } else {
+          if (parent->left == rem_node) {
+            parent->left = child;
+          } else {
+            parent->right = child;
+          }
         }
 
-        if (children == 0) { // NO CHILDREN
-            node* parent = rem_node->parent;
-            if (!parent) {
-                root = NULL;
-            } else {
-                if (rem_node == parent->left) {
-                    parent->left = NULL;
-                } else {
-                    parent->right = NULL;
-                }
-            }
-            if(parent)
-                while (parent->parent)
-                    restructure(parent);
-
-            free(rem_node);
-            size--;
-        } else if (children == -1 || children == 1) { // ONE CHILD
-            node* parent = rem_node->parent;
-            node* child;
-            if (children == -1) {
-                child = rem_node->left;
-            } else {
-                child = rem_node->right;
-            }
-
-            child->parent = parent;
-            if (!parent) {
-                root = child;
-            } else {
-                if (parent->left == rem_node) {
-                    parent->left = child;
-                } else {
-                    parent->right = child;
-                }
-            }
-
-            if(parent)
-                while(parent->parent)
-                    restructure(parent);
-
-            free(rem_node);
-            size--;
-        } else { // TWO CHILDREN
-            node* right_st = rem_node->right;
-            while (right_st->left != NULL) {
-                right_st = right_st->left;
-            }
-
-            int temp = right_st->element;
-            remove(temp);
-            rem_node->element = temp;
+        free(rem_node);
+        size--;
+      } else { // TWO CHILDREN
+        node* right_st = rem_node->right;
+        while (right_st->left != NULL) {
+          right_st = right_st->left;
         }
-        return true;
+
+        int temp = right_st->element;
+        remove(temp);
+        rem_node->element = temp;
+      }
+      return true;
+    }
+    
+    void makeParentest(node* curr, node* y){
+        if(!y->parent){
+            root = curr;
+            // cout << "ROOT IS NOW CURR: " << root->element << endl;
+        } 
+        else if (y->parent->left == y) y->parent->left = curr;
+        else y->parent->right = curr;
     }
 
-    void nodeTransplant(node* u, node* v){
-        if(u == root)
-            root = v;
-        else if(u->parent->left == u)
-            u->parent->left = v;
-        else
-            u->parent->right = v;
-
-        if(v)
-            v->parent = u->parent;
-    }
-
-    // implementation of rotate operation of x where
+    // TODO implementation of rotate operation of x where
     //  |
     //  y
     //   \
     //    x <- curr
     void zigleft(node* curr) {
-        node* left = curr->left, *parent = curr->parent;
-        nodeTransplant(parent, curr);
-        curr->left = parent;
-        parent->parent = curr;
-        parent->right = left;
-        if(left)
-            left->parent = parent;
+        // cout << "ZIGLEFT ON " << curr->element << endl;
+        node* y = curr->parent;
+        node* T2 = curr->left;
+        
+        if(T2) T2->parent = y;
+        y->right = T2;
+        
+        if(!y->parent){
+            root = curr;
+            // cout << "ROOT IS NOW CURR: " << root->element << endl;
+        } 
+        else if (y->parent->left == y) y->parent->left = curr;
+        else y->parent->right = curr;
+        
+        curr->parent = y->parent;
+        y->parent = curr;
+        curr->left = y;
+        
+        // print();
+        
+        
     }
 
-    //  implementation of rotate operation of x where
+    // TODO implementation of rotate operation of x where
     //   |
     //   y
     //  /
     // x <- curr
     void zigright(node* curr) {
-        node *right = curr->right, *parent = curr->parent;
-        nodeTransplant(parent, curr);
-        curr->right = parent;
-        parent->parent = curr;
-        parent->left = right;
-        if(right)
-            right->parent = parent;
+        // cout << "ZIGRIGHT ON " << curr->element << endl;
+        node* y = curr->parent;
+        node* T2 = curr->right;
+        
+        if(T2) T2->parent = y;
+        y->left = T2;
+        
+        
+        if(!y->parent){
+            root = curr;
+            // cout << "ROOT IS NOW CURR: " << root->element << endl;
+        } 
+        else if (y->parent->left == y) y->parent->left = curr;
+        else y->parent->right = curr;
+        curr->parent = y->parent;
+        y->parent = curr;
+        curr->right = y;
+        
+        // print();
     }
 
     // GIVEN the child (or x), find the parent (or y), and the grandparent if any (or z).
     // Splay the child to the root recursively or iteratively.
     void restructure(node* child) {
-        node* par = child->parent; // parent
+        node* par; // parent
+        // TODO find parent
+        if(!child->parent) return;
+        par = child->parent;
 
         // This is an indicator of the placement of parent to child (ptoc)
         bool ptoc_right = false;
@@ -209,19 +236,20 @@ public:
             ptoc_right = true;
         }
 
-        node* gp = par->parent;
-
-        if(!gp){
+        node* gp;
+        // TODO find grandparent. If gp does not exist, proceed to doing ZIGLEFT or ZIGRIGHT.
+        if(!par->parent){
             if(ptoc_right){
                 cout << "ZIGLEFT\n";
                 zigleft(child);
+                return;
             }else{
                 cout << "ZIGRIGHT\n";
-                zigright(child);
-            }
-            return;
+               zigright(child); 
+               return;
+            } 
         }
-
+        else gp = par->parent;
 
         // This is an indicator of the placement of grandparent to parent (gtop)
         bool gtop_right = false;
@@ -232,49 +260,64 @@ public:
         // FOR THE FOLLOWING: Write in each of the if statements a console output
         // on its corresponding operation (ZIGZIGLEFT, ZIGZIGRIGHT, ZIGZAGLEFT, or ZIGZAGRIGHT)
 
-        // z
-        //  \
+      // z
+      //  \
       //   y
-        //    \
+      //    \
       //     x
-        if (gtop_right && ptoc_right) {
-            cout << "ZIGZIGLEFT\n";
-            zigleft(par);
-            zigleft(child);
-        }
+      if (gtop_right && ptoc_right) {
+        // TODO call to either zigleft or zigright or both
+        cout << "ZIGZIGLEFT\n";
+        zigleft(par);
+        zigleft(child);
+      }
 
-            // z
-            //   \
-            //     y
-            //    /
-            //   x
-        else if (gtop_right) {
-            cout << "ZIGZAGLEFT\n";
-            zigright(child);
-            zigleft(child);
-        }
+      // z
+      //   \
+      //     y
+      //    /
+      //   x
+      else if (gtop_right && !ptoc_right) {
+        // TODO call to either zigleft or zigright or both
+        cout << "ZIGZAGLEFT\n";
+        zigright(child);
+        zigleft(child);
+      }
 
-            //     z
-            //    /
-            //   y
-            //  /
-            // x
-        else if (!ptoc_right) {
-            cout << "ZIGZIGRIGHT\n";
-            zigright(par);
-            zigright(child);
-        }
+      //     z
+      //    /
+      //   y
+      //  /
+      // x
+      else if (!gtop_right && !ptoc_right) {
+        // TODO call to either zigleft or zigright or both
+        cout << "ZIGZIGRIGHT\n";
+        zigright(par);
+        zigright(child);
+      }
 
-            //      z
-            //    /
-            //  y
-            //   \
-            //    x
-        else {
-            cout << "ZIGZAGRIGHT\n";
-            zigleft(child);
-            zigright(child);
+      //      z
+      //    /
+      //  y
+      //   \
+      //    x
+      else {
+        // TODO call to either zigleft or zigright or both
+        cout << "ZIGZAGRIGHT\n";
+        zigleft(child);
+        zigright(child);
+      }
+
+      return;
+    }
+    
+    node* splay(node* curr){
+        while(curr->parent){
+            restructure(curr);
+            // print();
+            // cout << "curr: " << curr->element << ", root: " <<  root->element << endl;
         }
+        return curr;
     }
 
     // WARNING. Do not modify the methods below.
@@ -290,7 +333,7 @@ public:
         print_inorder(root);
         cout << endl << "POST-ORDER: ";
         print_postorder(root);
-        cout << endl << "STATUS: " << check_health(root, NULL) << endl;
+        cout << endl << "STATUS: " << check_parent(root, NULL) << endl;
     }
 
     bool isEmpty() {
@@ -327,14 +370,20 @@ public:
         cout << curr->element << " ";
     }
 
-    bool check_health(node* curr, node* parent) {
-        bool health = curr->parent == parent;
-        if (curr->left != NULL) {
-            health &= check_health(curr->left, curr);
+    bool check_parent(node* curr, node* par) {
+        if (!curr) {
+            return true;
         }
-        if (curr->right != NULL) {
-            health &= check_health(curr->right, curr);
+        if (curr->parent != par) {
+            if (!curr->parent) {
+                cout << "Illegal parent of " << curr->element << ": NULL -- must be " << par->element << endl;
+            } else if (!par) {
+                cout << "Illegal parent of " << curr->element << ": " << curr->parent->element << "must be NULL" << endl;
+            } else {
+                cout << "Illegal parent of " << curr->element << ": " << curr->parent->element << " -- must be " << par->element << endl;
+            }
+            return false;
         }
-        return health;
+        return check_parent(curr->left, curr) && check_parent(curr->right, curr);
     }
 };
