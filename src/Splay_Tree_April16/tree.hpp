@@ -81,81 +81,135 @@ class BSTree {
         }
         return false;
     }
-
+    
     bool remove(int num) {
-      if (isEmpty()) {
-        return false;
-      }
-      node* rem_node = search_node(root, num);
-      if (rem_node->element != num) {
-        return false;
-      }
-
-      // FIND the number of children.
-      int children = 0;
-      // 0 - no children
-      // -1 - left child only
-      // 1 - right child only
-      // 2 - both children
-      if (rem_node->right) {
-        children = 1;
-      }
-      if (rem_node->left) {
-        if (children == 1) {
-          children = 2;
-        } else {
-          children = -1;
-        }
-      }
-
-      if (children == 0) { // NO CHILDREN
-        node* parent = rem_node->parent;
-        if (!parent) {
-          root = NULL;
-        } else {
-          if (rem_node == parent->left) {
-            parent->left = NULL;
-          } else {
-            parent->right = NULL;
-          }
+        if (isEmpty()) {
+            return false;
         }
 
-        free(rem_node);
+        // Find the node. If not found, search_node returns the last accessed node.
+        node* rem_node = search_node(root, num);
+        
+        // Splay the node (or the last accessed node if not found)
+        splay(rem_node);
+
+        // If the root is not the number we want, it's not in the tree.
+        if (root->element != num) {
+            return false;
+        }
+
+        // rem_node is now the root.
+        node* left_subtree = root->left;
+        node* right_subtree = root->right;
+
+        free(root);
         size--;
-      } else if (children == -1 || children == 1) { // ONE CHILD
-        node* parent = rem_node->parent;
-        node* child;
-        if (children == -1) {
-          child = rem_node->left;
+
+        if (!left_subtree && !right_subtree) {
+            root = NULL;
+        } else if (!left_subtree) {
+            root = right_subtree;
+            root->parent = NULL;
+        } else if (!right_subtree) {
+            root = left_subtree;
+            root->parent = NULL;
         } else {
-          child = rem_node->right;
+            // Requirement: Go to the right subtree and find the leftmost node
+            node* successor = right_subtree;
+            while (successor->left != NULL) {
+                successor = successor->left;
+            }
+
+            // Splay the successor to the top of the right subtree's context
+            // Note: Since successor is the leftmost, it won't have a left child.
+            while (successor->parent != right_subtree->parent) {
+                restructure(successor);
+            }
+            
+            // Now successor is the root of the right side
+            successor->parent = NULL; 
+            successor->left = left_subtree;
+            left_subtree->parent = successor;
+            root = successor;
         }
 
-        child->parent = parent;
-        if (!parent) {
-          root = child;
-        } else {
-          if (parent->left == rem_node) {
-            parent->left = child;
-          } else {
-            parent->right = child;
-          }
-        }
-
-        free(rem_node);
-        size--;
-      } else { // TWO CHILDREN
-        node* right_st = rem_node->right;
-        while (right_st->left != NULL) {
-          right_st = right_st->left;
-        }
-
-        int temp = right_st->element;
-        remove(temp);
-        rem_node->element = temp;
-      }
-      return true;
+        return true;
     }
+
+    // bool remove(int num) {
+    //   if (isEmpty()) {
+    //     return false;
+    //   }
+    //   node* rem_node = search_node(root, num);
+    //   if (rem_node->element != num) {
+    //     return false;
+    //   }
+
+    //   // FIND the number of children.
+    //   int children = 0;
+    //   // 0 - no children
+    //   // -1 - left child only
+    //   // 1 - right child only
+    //   // 2 - both children
+    //   if (rem_node->right) {
+    //     children = 1;
+    //   }
+    //   if (rem_node->left) {
+    //     if (children == 1) {
+    //       children = 2;
+    //     } else {
+    //       children = -1;
+    //     }
+    //   }
+
+    //   if (children == 0) { // NO CHILDREN
+    //     node* parent = rem_node->parent;
+    //     if (!parent) {
+    //       root = NULL;
+    //     } else {
+    //       if (rem_node == parent->left) {
+    //         parent->left = NULL;
+    //       } else {
+    //         parent->right = NULL;
+    //       }
+    //     }
+
+    //     free(rem_node);
+    //     size--;
+    //   } else if (children == -1 || children == 1) { // ONE CHILD
+    //     node* parent = rem_node->parent;
+    //     node* child;
+    //     if (children == -1) {
+    //       child = rem_node->left;
+    //     } else {
+    //       child = rem_node->right;
+    //     }
+
+    //     child->parent = parent;
+    //     if (!parent) {
+    //       root = child;
+    //     } else {
+    //       if (parent->left == rem_node) {
+    //         parent->left = child;
+    //       } else {
+    //         parent->right = child;
+    //       }
+    //     }
+
+    //     free(rem_node);
+    //     size--;
+    //   } else { // TWO CHILDREN
+    //     node* right_st = rem_node->right;
+    //     while (right_st->left != NULL) {
+    //       right_st = right_st->left;
+    //     }
+
+    //     int temp = right_st->element;
+    //     remove(temp);
+    //     rem_node->element = temp;
+    //   }
+    //   return true;
+    // }
     
     void makeParentest(node* curr, node* y){
         if(!y->parent){
