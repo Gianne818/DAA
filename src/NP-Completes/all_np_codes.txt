@@ -1,0 +1,747 @@
+/*--------------
+ Battleships
+-------------- */
+#include <iostream>
+using namespace std;
+
+const int N = 10;
+
+int grid[N][N];
+int n;
+
+// Try placing ship at (r,c) horizontally or vertically
+bool canPlace(int r, int c, int len, int dir)
+{
+    // dir = 0  horizontal, 1  vertical
+
+    for(int i = 0; i < len; i++)
+    {
+        int nr = r + (dir == 1 ? i : 0);
+        int nc = c + (dir == 0 ? i : 0);
+
+        // Out of bounds
+        if(nr >= n || nc >= n) return false;
+
+        // Cell already occupied
+        if(grid[nr][nc] != 0) return false;
+    }
+
+    return true;
+}
+
+// Place or remove ship
+void setShip(int r, int c, int len, int dir, int val)
+{
+    for(int i = 0; i < len; i++)
+    {
+        int nr = r + (dir == 1 ? i : 0);
+        int nc = c + (dir == 0 ? i : 0);
+        grid[nr][nc] = val;
+    }
+}
+
+// Backtracking
+bool solve(int ships[], int idx, int shipCount)
+{
+    // Base case: all ships placed
+    if(idx == shipCount)
+        return true;
+
+    int len = ships[idx];
+
+    // Try every cell
+    for(int r = 0; r < n; r++)
+    {
+        for(int c = 0; c < n; c++)
+        {
+            // Try horizontal and vertical
+            for(int dir = 0; dir < 2; dir++)
+            {
+                if(canPlace(r, c, len, dir))
+                {
+                    setShip(r, c, len, dir, 1);
+
+                    if(solve(ships, idx + 1, shipCount))
+                        return true;
+
+                    // backtrack
+                    setShip(r, c, len, dir, 0);
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+int main()
+{
+    n = 5;
+
+    // 0 = empty grid
+    for(int i = 0; i < n; i++)
+        for(int j = 0; j < n; j++)
+            grid[i][j] = 0;
+
+    // Ship lengths
+    int ships[] = {3, 2, 2};
+    int shipCount = 3;
+
+    if(solve(ships, 0, shipCount))
+    {
+        cout << "Solution found:\n";
+
+        for(int i = 0; i < n; i++)
+        {
+            for(int j = 0; j < n; j++)
+                cout << grid[i][j] << " ";
+            cout << "\n";
+        }
+    }
+    else
+    {
+        cout << "No solution";
+    }
+
+    return 0;
+}
+
+/*--------------
+ Clique
+-------------- */
+#include <iostream>
+using namespace std;
+
+/*
+    Check if a vertex is connected to all vertices in current clique
+*/
+bool isValid(int graph[][50], int currentClique[], int cliqueSize, int candidate)
+{
+    for(int i = 0; i < cliqueSize; i++)
+    {
+        // If any edge is missing, not valid
+        if(graph[currentClique[i]][candidate] == 0)
+            return false;
+    }
+    return true;
+}
+
+/*
+    Branch and Bound recursive search
+
+    currentClique   -> stores current clique vertices
+    candidates      -> available vertices to try
+    target          -> required clique size (k)
+    cliqueSize      -> current size of clique
+    candidateArraySize -> number of remaining candidates
+*/
+bool solveClique(int graph[][50],
+                 int currentClique[],
+                 int candidates[],
+                 int target,
+                 int cliqueSize,
+                 int candidateSize)
+{
+    // If we already formed a clique of size k
+    if(cliqueSize == target)
+        return true;
+
+    // Branch and Bound Pruning:
+    // Even if we take all remaining candidates,
+    // we still cannot reach target size
+    if(cliqueSize + candidateSize < target)
+        return false;
+
+    // Try each candidate
+    for(int i = 0; i < candidateSize; i++)
+    {
+        int v = candidates[i];
+
+        // Check if we can add this vertex to clique
+        if(isValid(graph, currentClique, cliqueSize, v))
+        {
+            // Include vertex in clique
+            currentClique[cliqueSize] = v;
+
+            // Build new candidate list (only those connected to v)
+            int newCandidates[50];
+            int newSize = 0;
+
+            for(int j = i + 1; j < candidateSize; j++)
+            {
+                if(graph[v][candidates[j]] == 1)
+                {
+                    newCandidates[newSize++] = candidates[j];
+                }
+            }
+
+            // Recurse
+            if(solveClique(graph,
+                           currentClique,
+                           newCandidates,
+                           target,
+                           cliqueSize + 1,
+                           newSize))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+int main()
+{
+    int n = 5; // number of vertices
+    int k = 3; // target clique size
+
+    /*
+        Adjacency matrix (undirected graph)
+
+        1 = edge exists
+        0 = no edge
+    */
+    int graph[50][50] =
+    {
+        {0, 1, 1, 1, 0},
+        {1, 0, 1, 0, 1},
+        {1, 1, 0, 1, 1},
+        {1, 0, 1, 0, 0},
+        {0, 1, 1, 0, 0}
+    };
+
+    // Initial candidates: all vertices
+    int candidates[50];
+    for(int i = 0; i < n; i++)
+    {
+        candidates[i] = i;
+    }
+
+    int currentClique[50];
+
+    // Start search
+    if(solveClique(graph,
+                   currentClique,
+                   candidates,
+                   k,
+                   0,
+                   n))
+    {
+        cout << "Clique of size " << k << " exists";
+    }
+    else
+    {
+        cout << "No clique of size " << k << " exists";
+    }
+
+    return 0;
+}
+
+/*--------------
+ Exact Cover
+-------------- */
+#include <iostream>
+using namespace std;
+
+int nSubsets, nElements;
+
+// check if subset can be chosen (no element already covered)
+bool canUse(int cover[][50], int usedElements[], int subset)
+{
+    for(int j = 0; j < nElements; j++)
+    {
+        if(cover[subset][j] == 1 && usedElements[j] == 1)
+            return false;
+    }
+    return true;
+}
+
+// mark/unmark elements
+void apply(int cover[][50], int usedElements[], int subset, int val)
+{
+    for(int j = 0; j < nElements; j++)
+    {
+        if(cover[subset][j] == 1)
+            usedElements[j] = val;
+    }
+}
+
+// backtracking
+bool solve(int cover[][50], int usedElements[], int idx)
+{
+    // check if all elements are covered
+    bool allCovered = true;
+    for(int j = 0; j < nElements; j++)
+    {
+        if(usedElements[j] == 0)
+        {
+            allCovered = false;
+            break;
+        }
+    }
+
+    if(allCovered)
+        return true;
+
+    if(idx == nSubsets)
+        return false;
+
+    // choice 1: skip subset
+    if(solve(cover, usedElements, idx + 1))
+        return true;
+
+    // choice 2: take subset (if valid)
+    if(canUse(cover, usedElements, idx))
+    {
+        apply(cover, usedElements, idx, 1);
+
+        if(solve(cover, usedElements, idx + 1))
+            return true;
+
+        apply(cover, usedElements, idx, 0); // backtrack
+    }
+
+    return false;
+}
+
+int main()
+{
+    nSubsets = 4;
+    nElements = 5;
+
+    /*
+        cover[i][j] = 1 means subset i covers element j
+    */
+    int cover[50][50] =
+    {
+        {1, 0, 1, 0, 0},
+        {0, 1, 1, 0, 0},
+        {0, 0, 1, 1, 0},
+        {0, 0, 0, 1, 1}
+    };
+
+    int usedElements[50] = {0};
+
+    if(solve(cover, usedElements, 0))
+        cout << "Exact cover exists";
+    else
+        cout << "No exact cover exists";
+
+    return 0;
+}
+
+/*--------------
+ Graph Coloring
+-------------- */
+#include <iostream>
+using namespace std;
+
+int n; // number of vertices
+
+// Check if we can assign color c to vertex v
+bool isSafe(int graph[][50], int color[], int v, int c)
+{
+    for(int i = 0; i < n; i++)
+    {
+        // If adjacent and same color  not safe
+        if(graph[v][i] == 1 && color[i] == c)
+            return false;
+    }
+    return true;
+}
+
+// Try coloring all vertices
+bool solve(int graph[][50], int color[], int v, int k)
+{
+    // If all vertices colored
+    if(v == n)
+        return true;
+
+    // Try all k colors
+    for(int c = 1; c <= k; c++)
+    {
+        if(isSafe(graph, color, v, c))
+        {
+            color[v] = c;
+
+            if(solve(graph, color, v + 1, k))
+                return true;
+
+            // backtrack
+            color[v] = 0;
+        }
+    }
+
+    return false;
+}
+
+int main()
+{
+    n = 4;
+    int k = 3; // number of colors allowed
+
+    int graph[50][50] =
+    {
+        {0, 1, 1, 1},
+        {1, 0, 1, 0},
+        {1, 1, 0, 1},
+        {1, 0, 1, 0}
+    };
+
+    int color[50] = {0};
+
+    if(solve(graph, color, 0, k))
+    {
+        cout << "Coloring possible\n";
+        for(int i = 0; i < n; i++)
+            cout << "Vertex " << i << " -> Color " << color[i] << "\n";
+    }
+    else
+    {
+        cout << "Not possible to color with " << k << " colors";
+    }
+
+    return 0;
+}
+
+/*--------------
+ Hamiltonian Cycle
+-------------- */
+#include <iostream>
+using namespace std;
+
+int n;
+
+// Check if vertex can be added at position pos
+bool isSafe(int graph[][50], int path[], int pos, int v)
+{
+    // Must be connected to previous vertex
+    if(graph[path[pos - 1]][v] == 0)
+        return false;
+
+    // Must not already be in path
+    for(int i = 0; i < pos; i++)
+        if(path[i] == v)
+            return false;
+
+    return true;
+}
+
+// Backtracking function
+bool solve(int graph[][50], int path[], int pos)
+{
+    // Base case: all vertices included
+    if(pos == n)
+    {
+        // check if last connects to first (cycle)
+        if(graph[path[pos - 1]][path[0]] == 1)
+            return true;
+        else
+            return false;
+    }
+
+    // Try all vertices
+    for(int v = 1; v < n; v++)
+    {
+        if(isSafe(graph, path, pos, v))
+        {
+            path[pos] = v;
+
+            if(solve(graph, path, pos + 1))
+                return true;
+
+            path[pos] = -1; // backtrack
+        }
+    }
+
+    return false;
+}
+
+int main()
+{
+    n = 5;
+
+    int graph[50][50] =
+    {
+        {0, 1, 0, 1, 0},
+        {1, 0, 1, 1, 1},
+        {0, 1, 0, 0, 1},
+        {1, 1, 0, 0, 1},
+        {0, 1, 1, 1, 0}
+    };
+
+    int path[50];
+
+    // start from vertex 0
+    for(int i = 0; i < n; i++)
+        path[i] = -1;
+
+    path[0] = 0;
+
+    if(solve(graph, path, 1))
+    {
+        cout << "Hamiltonian Cycle exists:\n";
+        for(int i = 0; i < n; i++)
+            cout << path[i] << " ";
+        cout << path[0]; // complete cycle
+    }
+    else
+    {
+        cout << "No Hamiltonian Cycle exists";
+    }
+
+    return 0;
+}
+
+/*--------------
+ Job Scheduling
+-------------- */
+#include <iostream>
+using namespace std;
+
+int main()
+{
+    int n = 5;
+
+    // jobs: (id, deadline, profit)
+    int id[] = {1, 2, 3, 4, 5};
+    int dead[] = {2, 1, 2, 1, 3};
+    int profit[] = {100, 19, 27, 25, 15};
+
+    // Step 1: sort by profit (simple selection sort)
+    for(int i = 0; i < n - 1; i++)
+    {
+        for(int j = i + 1; j < n; j++)
+        {
+            if(profit[j] > profit[i])
+            {
+                swap(profit[i], profit[j]);
+                swap(dead[i], dead[j]);
+                swap(id[i], id[j]);
+            }
+        }
+    }
+
+    // Step 2: find max deadline
+    int maxDead = dead[0];
+    for(int i = 1; i < n; i++)
+        if(dead[i] > maxDead)
+            maxDead = dead[i];
+
+    // Step 3: time slots
+    int slot[100];
+    for(int i = 0; i < maxDead; i++)
+        slot[i] = -1;
+
+    int totalProfit = 0;
+
+    // Step 4: schedule jobs
+    for(int i = 0; i < n; i++)
+    {
+        // try latest available slot before deadline
+        for(int j = dead[i] - 1; j >= 0; j--)
+        {
+            if(slot[j] == -1)
+            {
+                slot[j] = id[i];
+                totalProfit += profit[i];
+                break;
+            }
+        }
+    }
+
+    // Output
+    cout << "Scheduled jobs: ";
+    for(int i = 0; i < maxDead; i++)
+    {
+        if(slot[i] != -1)
+            cout << slot[i] << " ";
+    }
+
+    cout << "\nTotal profit: " << totalProfit;
+
+    return 0;
+}
+
+/*--------------
+ Longest Path
+-------------- */
+#include <iostream>
+using namespace std;
+
+int n;
+
+// DFS backtracking
+bool solve(int graph[][50],
+           int visited[],
+           int current,
+           int length,
+           int k)
+{
+    // If required length reached
+    if(length >= k)
+        return true;
+
+    // Try all neighbors
+    for(int next = 0; next < n; next++)
+    {
+        // adjacent and not visited
+        if(graph[current][next] == 1 &&
+           visited[next] == 0)
+        {
+            visited[next] = 1;
+
+            if(solve(graph,
+                     visited,
+                     next,
+                     length + 1,
+                     k))
+            {
+                return true;
+            }
+
+            // backtrack
+            visited[next] = 0;
+        }
+    }
+
+    return false;
+}
+
+int main()
+{
+    n = 5;
+
+    int k = 4;
+
+    int graph[50][50] =
+    {
+        {0, 1, 1, 0, 0},
+        {1, 0, 1, 1, 0},
+        {1, 1, 0, 1, 1},
+        {0, 1, 1, 0, 1},
+        {0, 0, 1, 1, 0}
+    };
+
+    bool found = false;
+
+    // Try starting from every vertex
+    for(int start = 0; start < n; start++)
+    {
+        int visited[50] = {0};
+
+        visited[start] = 1;
+
+        if(solve(graph,
+                 visited,
+                 start,
+                 0,
+                 k))
+        {
+            found = true;
+            break;
+        }
+    }
+
+    if(found)
+        cout << "Path of length " << k << " exists";
+    else
+        cout << "No path of length " << k << " exists";
+
+    return 0;
+}
+
+/*--------------
+ Subset Sum
+-------------- */
+#include <iostream>
+using namespace std;
+
+// Function to determine if there is a subset
+// whose sum is equal to target
+bool subsetSum(int arr[], int n, int target)
+{
+    // DP table
+    // dp[i][j] means:
+    // Can we form sum j using the first i elements?
+    bool dp[100][1000];
+
+    // Base Case 1:
+    // Sum 0 is always possible
+    // by choosing no elements
+    for(int i = 0; i <= n; i++)
+    {
+        dp[i][0] = true;
+    }
+
+    // Base Case 2:
+    // If there are no elements,
+    // positive sums cannot be formed
+    for(int j = 1; j <= target; j++)
+    {
+        dp[0][j] = false;
+    }
+
+    // Fill the DP table
+    for(int i = 1; i <= n; i++)
+    {
+        for(int j = 1; j <= target; j++)
+        {
+            // Current element
+            int current = arr[i - 1];
+
+            // If current element is bigger than the sum,
+            // we cannot include it
+            if(current > j)
+            {
+                // Copy answer from previous row
+                dp[i][j] = dp[i - 1][j];
+            }
+            else
+            {
+                // Two choices:
+                //
+                // 1. Exclude current element
+                //    dp[i - 1][j]
+                //
+                // 2. Include current element
+                //    dp[i - 1][j - current]
+                //
+                // If either is true,
+                // then sum j is possible
+                dp[i][j] =
+                    dp[i - 1][j] ||
+                    dp[i - 1][j - current];
+            }
+        }
+    }
+
+    // Final answer:
+    // Can we form target using all n elements?
+    return dp[n][target];
+}
+
+int main()
+{
+    // Given array
+    int arr[] = {3, 34, 4, 12, 5, 2};
+
+    // Number of elements
+    int n = 6;
+
+    // Target sum
+    int target = 9;
+
+    // Check if subset exists
+    if(subsetSum(arr, n, target))
+    {
+        cout << "Subset with given sum exists";
+    }
+    else
+    {
+        cout << "Subset with given sum does not exist";
+    }
+
+    return 0;
+}
