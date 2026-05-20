@@ -1,0 +1,30 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+unsigned long long fibonacci(int n) {
+    if (n <= 1) return n;
+    
+    vector<unsigned long long> dp(n + 1);
+    dp[0] = 0;
+    dp[1] = 1;
+    
+    for (int i = 2; i <= n; i++) {
+        dp[i] = dp[i - 1] + dp[i - 2];
+    }
+    
+    return dp[n];
+}
+
+int main() {
+    int n = 100;    
+    cout << "Fibonacci(" << n << ") = " << fibonacci(n) << endl;
+    
+    // Print sequence
+    cout << "\nFibonacci sequence (0 to n):" << endl;
+    for (int i = 0; i <= n; i++) {
+        cout << "F(" << i << ") = " << fibonacci(i) << endl;
+    }
+    
+    return 0;
+}

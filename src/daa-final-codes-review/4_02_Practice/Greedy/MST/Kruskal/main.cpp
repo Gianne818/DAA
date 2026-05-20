@@ -1,0 +1,178 @@
+// STRICTLY DO NOT MODIFY ANY CODES BELOW
+// use priority queue
+/*
+
+https://www.cs.usfca.edu/~galles/visualization/Kruskal.html
+Kruskal: sorts edges, picks smallest, avoids cycles (union-find).
+Adjacency List Representation
+DIRECTED
+
+*/
+
+#include <iostream>
+#include "graphlist.hpp"
+using namespace std;
+
+int main(void) {
+    char op, v, x;
+    char orig, dest;
+    int e;
+
+    int num, i;
+    char* verts;
+    int* edges;
+    
+    Edge** mst;
+    int num_vert;
+
+    Graph* graph = new GraphList();
+
+    // Insert vertices '0' through '9'
+    for (char c = '0'; c <= '9'; c++) {
+        graph->insertVertex(c);
+    }
+    
+    // Insert edges using char vertices
+    graph->insertEdge('0', '2', 4);
+    graph->insertEdge('0', '4', 2);
+    graph->insertEdge('1', '2', 8);
+    graph->insertEdge('1', '5', 9);
+    graph->insertEdge('2', '4', 9);
+    graph->insertEdge('2', '5', 7);
+    graph->insertEdge('2', '6', 6);
+    graph->insertEdge('3', '0', 2);
+    graph->insertEdge('3', '5', 2);
+    graph->insertEdge('3', '7', 6);
+    graph->insertEdge('4', '6', 9);
+    graph->insertEdge('5', '6', 6);
+    graph->print();
+
+    do {
+        cout << "Operation: ";
+        cin >> op;
+        switch (op) {
+            case 'v':
+                cin >> v;
+                graph->insertVertex(v);
+                break;
+            case 'e':
+                cin >> orig;
+                cin >> dest;
+                cin >> e;
+                graph->insertEdge(orig, dest, e);
+                break;
+            case 'q':
+                cout << graph->numVertices() << endl;
+                break;
+            case 'w':
+                cout << graph->numEdges() << endl;
+                break;
+            case 'V':
+                verts = graph->vertices();
+                num = graph->numVertices();
+                cout << "List of Vertices: ";
+                for (int i = 0; i < num; i++) {
+                    cout << verts[i];
+                    if (i < num-1) {
+                        cout << ", ";
+                    }
+                }
+                cout << endl;
+                break;
+            case 'E':
+                edges = graph->edges();
+                num = graph->numEdges();
+                cout << "List of Edges: ";
+                for (i = 0; i < num; i++) {
+                    cout << edges[i];
+                    if (i < num-1) {
+                        cout << ", ";
+                    }
+                }
+                cout << endl;
+                break;
+            case 'g':
+                cin >> orig;
+                cin >> dest;
+                cout << graph->getEdge(orig, dest) << endl;
+                break;
+            case 'n':
+                cin >> e;
+                verts = graph->endVertices(e);
+                cout << "Origin: " << verts[0] << " | Destination: " << verts[1] << endl;
+                break;
+            case 'l':
+                cin >> v;
+                cin >> e;
+                cout << graph->opposite(v, e) << endl;
+                break;
+            case 'o':
+                cin >> orig;
+                cout << graph->outDegree(orig) << endl;
+                break;
+            case 'i':
+                cin >> dest;
+                cout << graph->inDegree(dest) << endl;
+                break;
+            case 'O':
+                cin >> orig;
+                edges = graph->outgoingEdges(orig);
+                num = graph->outDegree(orig);
+                cout << "List of Outgoing Edges from " << orig << ": ";
+                for (i = 0; i < num; i++) {
+                    cout << edges[i];
+                    if (i < num-1) {
+                        cout << ", ";
+                    }
+                }
+                cout << endl;
+                break;
+            case 'I':
+                cin >> dest;
+                edges = graph->incomingEdges(dest);
+                num = graph->inDegree(dest);
+                cout << "List of Incoming Edges to " << dest << ": ";
+                for (i = 0; i < num; i++) {
+                    cout << edges[i];
+                    if (i < num-1) {
+                        cout << ", ";
+                    }
+                }
+                cout << endl;
+                break;
+            case 'r':
+                cin >> e;
+                cout << graph->removeEdge(e) << endl;
+                break;
+            case 'R':
+                cin >> v;
+                cout << graph->removeVertex(v) << endl;
+                break;
+            case 'k':
+                num_vert = graph->numVertices();
+                mst = graph->kruskal();
+                
+                if (mst == nullptr) {
+                    cout << "No MST (graph disconnected)" << endl;
+                } else {
+                    cout << "MST Edges:" << endl;
+                    for (int i = 0; i < num_vert - 1; i++) {
+                        mst[i]->toString();
+                        cout << endl;
+                    }
+                    free(mst); 
+                }
+                break;
+            case 'p':
+                graph->print();
+                break;
+            case 'x':
+                cout << "Exiting...";
+                break;
+            default:
+                cout << "Invalid operation";
+        }
+    } while (op != 'x');
+
+    return 0;
+}
