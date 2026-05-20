@@ -4,6 +4,13 @@ using namespace std;
 class BSTree {
     node* root;
     int size;
+    
+    node* splay(node* curr){
+        while(curr->parent){
+            restructure(curr);
+        }
+        return curr;
+    }
 
     node* create_node(int num, node* parent) {
         node* n = (node*) malloc( sizeof(node) );
@@ -16,20 +23,15 @@ class BSTree {
 
     bool search(node* curr, int num) {
         if (curr == NULL) {
-            // restructure(curr);
             return false;
         }
         if (num == curr->element) {
-            splay(curr);
-            // restructure(curr);
             return true;
         }
 
         if (num < curr->element) {
-            // restructure(curr);
             return search(curr->left, num);
         }
-        // restructure(curr);
         return search(curr->right, num);
     }
 
@@ -57,165 +59,88 @@ class BSTree {
     }
 
     bool search(int num) {
-        return search(root, num);
+        if(isEmpty()) return false;
+        
+        node* curr = search_node(root, num);
+        splay(curr);
+        return true;
     }
 
     bool insert(int num) {
-        if (root == NULL) {
-            root = create_node(num, NULL);
+        if(root == nullptr){
+            root = create_node(num, nullptr);
             size++;
             return true;
         } else {
-            node* parent = search_node(root, num);
-            if (parent->element != num) {
-                node* newest = create_node(num, parent);
-                if (parent->element < num) {
-                    parent->right = newest;
-                } else {
-                    parent->left = newest;
+            node* par = search_node(root, num);
+            if(par->element != num){
+                node* newNode = create_node(num, par);
+                if(num < par->element){
+                    par->left = newNode;
                 }
+                else {
+                    par->right = newNode;
+                }
+                splay(newNode);
                 size++;
-                splay(newest);
                 return true;
             }
         }
         return false;
     }
-    
+
     bool remove(int num) {
-        if (isEmpty()) {
-            return false;
-        }
+      if (isEmpty()) {
+        return false;
+      }
+      node* rem_node = search_node(root, num);
+      splay(rem_node);
+      
+      if (rem_node->element != num) {
+        return false;
+      }
+      
+      node* left_st = rem_node->left;
+      node* right_st = rem_node->right;
+      
+      if(left_st) left_st->parent = nullptr;
+      if(right_st) right_st->parent = nullptr;
+      
+      
+      if(!left_st && !right_st){
+          root = nullptr;
+      }
+      else if (left_st && !right_st){
+          root = left_st;
+      }
+      else if (right_st && !left_st){
+          root = right_st;
+      }
+      
+      else {
+          node* succ = right_st;
+          while(succ->left){
+              succ = succ->left;
+          }
+          
+          while(succ->parent){
+              restructure(succ);
+          }
+          
+          succ->parent = nullptr;
+          succ->left = left_st;
+          left_st->parent = succ;
+          root = succ;
+      }
+      
+      free(rem_node);
+      size--;
 
-        // Find the node. If not found, search_node returns the last accessed node.
-        node* rem_node = search_node(root, num);
-        
-        // Splay the node (or the last accessed node if not found)
-        splay(rem_node);
-
-        // If the root is not the number we want, it's not in the tree.
-        if (root->element != num) {
-            return false;
-        }
-
-        // rem_node is now the root.
-        node* left_subtree = root->left;
-        node* right_subtree = root->right;
-
-        free(root);
-        size--;
-
-        if (!left_subtree && !right_subtree) {
-            root = NULL;
-        } else if (!left_subtree) {
-            root = right_subtree;
-            root->parent = NULL;
-        } else if (!right_subtree) {
-            root = left_subtree;
-            root->parent = NULL;
-        } else {
-            // Requirement: Go to the right subtree and find the leftmost node
-            node* successor = right_subtree;
-            while (successor->left != NULL) {
-                successor = successor->left;
-            }
-
-            // Splay the successor to the top of the right subtree's context
-            // Note: Since successor is the leftmost, it won't have a left child.
-            while (successor->parent != right_subtree->parent) {
-                restructure(successor);
-            }
-            
-            // Now successor is the root of the right side
-            successor->parent = NULL; 
-            successor->left = left_subtree;
-            left_subtree->parent = successor;
-            root = successor;
-        }
-
-        return true;
+      return false;
     }
-
-    // bool remove(int num) {
-    //   if (isEmpty()) {
-    //     return false;
-    //   }
-    //   node* rem_node = search_node(root, num);
-    //   if (rem_node->element != num) {
-    //     return false;
-    //   }
-
-    //   // FIND the number of children.
-    //   int children = 0;
-    //   // 0 - no children
-    //   // -1 - left child only
-    //   // 1 - right child only
-    //   // 2 - both children
-    //   if (rem_node->right) {
-    //     children = 1;
-    //   }
-    //   if (rem_node->left) {
-    //     if (children == 1) {
-    //       children = 2;
-    //     } else {
-    //       children = -1;
-    //     }
-    //   }
-
-    //   if (children == 0) { // NO CHILDREN
-    //     node* parent = rem_node->parent;
-    //     if (!parent) {
-    //       root = NULL;
-    //     } else {
-    //       if (rem_node == parent->left) {
-    //         parent->left = NULL;
-    //       } else {
-    //         parent->right = NULL;
-    //       }
-    //     }
-
-    //     free(rem_node);
-    //     size--;
-    //   } else if (children == -1 || children == 1) { // ONE CHILD
-    //     node* parent = rem_node->parent;
-    //     node* child;
-    //     if (children == -1) {
-    //       child = rem_node->left;
-    //     } else {
-    //       child = rem_node->right;
-    //     }
-
-    //     child->parent = parent;
-    //     if (!parent) {
-    //       root = child;
-    //     } else {
-    //       if (parent->left == rem_node) {
-    //         parent->left = child;
-    //       } else {
-    //         parent->right = child;
-    //       }
-    //     }
-
-    //     free(rem_node);
-    //     size--;
-    //   } else { // TWO CHILDREN
-    //     node* right_st = rem_node->right;
-    //     while (right_st->left != NULL) {
-    //       right_st = right_st->left;
-    //     }
-
-    //     int temp = right_st->element;
-    //     remove(temp);
-    //     rem_node->element = temp;
-    //   }
-    //   return true;
-    // }
     
     void makeParentest(node* curr, node* y){
-        if(!y->parent){
-            root = curr;
-            // cout << "ROOT IS NOW CURR: " << root->element << endl;
-        } 
+        if(!y->parent) root = curr;
         else if (y->parent->left == y) y->parent->left = curr;
         else y->parent->right = curr;
     }
@@ -226,26 +151,17 @@ class BSTree {
     //   \
     //    x <- curr
     void zigleft(node* curr) {
-        // cout << "ZIGLEFT ON " << curr->element << endl;
         node* y = curr->parent;
         node* T2 = curr->left;
         
         if(T2) T2->parent = y;
         y->right = T2;
         
-        if(!y->parent){
-            root = curr;
-            // cout << "ROOT IS NOW CURR: " << root->element << endl;
-        } 
-        else if (y->parent->left == y) y->parent->left = curr;
-        else y->parent->right = curr;
-        
         curr->parent = y->parent;
-        y->parent = curr;
+        makeParentest(curr, y);
+        
         curr->left = y;
-        
-        // print();
-        
+        y->parent = curr;
         
     }
 
@@ -255,25 +171,17 @@ class BSTree {
     //  /
     // x <- curr
     void zigright(node* curr) {
-        // cout << "ZIGRIGHT ON " << curr->element << endl;
         node* y = curr->parent;
         node* T2 = curr->right;
         
         if(T2) T2->parent = y;
         y->left = T2;
         
-        
-        if(!y->parent){
-            root = curr;
-            // cout << "ROOT IS NOW CURR: " << root->element << endl;
-        } 
-        else if (y->parent->left == y) y->parent->left = curr;
-        else y->parent->right = curr;
         curr->parent = y->parent;
-        y->parent = curr;
-        curr->right = y;
+        makeParentest(curr, y);
         
-        // print();
+        curr->right = y;
+        y->parent = curr;
     }
 
     // GIVEN the child (or x), find the parent (or y), and the grandparent if any (or z).
@@ -281,7 +189,6 @@ class BSTree {
     void restructure(node* child) {
         node* par; // parent
         // TODO find parent
-        if(!child->parent) return;
         par = child->parent;
 
         // This is an indicator of the placement of parent to child (ptoc)
@@ -292,19 +199,21 @@ class BSTree {
 
         node* gp;
         // TODO find grandparent. If gp does not exist, proceed to doing ZIGLEFT or ZIGRIGHT.
+        
         if(!par->parent){
             if(ptoc_right){
                 cout << "ZIGLEFT\n";
                 zigleft(child);
                 return;
-            }else{
+            }
+            else {
                 cout << "ZIGRIGHT\n";
-               zigright(child); 
-               return;
-            } 
+                zigright(child);
+                return;
+            }
         }
         else gp = par->parent;
-
+        
         // This is an indicator of the placement of grandparent to parent (gtop)
         bool gtop_right = false;
         if (gp->right == par) {
@@ -324,6 +233,7 @@ class BSTree {
         cout << "ZIGZIGLEFT\n";
         zigleft(par);
         zigleft(child);
+        // return par;
       }
 
       // z
@@ -336,6 +246,7 @@ class BSTree {
         cout << "ZIGZAGLEFT\n";
         zigright(child);
         zigleft(child);
+        // return curr;
       }
 
       //     z
@@ -348,6 +259,7 @@ class BSTree {
         cout << "ZIGZIGRIGHT\n";
         zigright(par);
         zigright(child);
+        // return par;
       }
 
       //      z
@@ -360,18 +272,10 @@ class BSTree {
         cout << "ZIGZAGRIGHT\n";
         zigleft(child);
         zigright(child);
+        // return curr;
       }
 
       return;
-    }
-    
-    node* splay(node* curr){
-        while(curr->parent){
-            restructure(curr);
-            // print();
-            // cout << "curr: " << curr->element << ", root: " <<  root->element << endl;
-        }
-        return curr;
     }
 
     // WARNING. Do not modify the methods below.
